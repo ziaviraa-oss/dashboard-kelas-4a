@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Akademik 4A - SDN Karang Asih 14</title>
+    <!-- Tailwind CSS & Google Fonts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK (Compat Version) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800">
+
+    <!-- Header / Navbar Atas -->
+    <header class="bg-gradient-to-r from-sky-400 via-indigo-500 to-purple-500 text-white shadow-xl rounded-b-3xl p-6 mb-8 relative overflow-hidden">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-4 cursor-pointer" onclick="switchTab('beranda')">
+                <div class="text-5xl animate-float">📚</div>
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">Dashboard Kelas 4A ✨</h1>
+                    <p class="text-sky-100 text-sm font-medium">SDN Karang Asih 14 • Asisten Mengajar Ibu Guru</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="switchTab('beranda')" class="bg-white/20 hover:bg-white/35 backdrop-blur-md px-4 py-2 rounded-xl text-xs font-bold transition border border-white/30 shadow-sm">🏠 Beranda</button>
+                <div class="flex items-center gap-2 bg-white/20 backdrop-blur-md px-4 py-2 rounded-xl border border-white/30 text-xs">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span id="sync-status" class="font-semibold">Cloud Sync Aktif</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-6xl mx-auto px-4 pb-16">
+
+        <!-- ================= HALAMAN BERANDA (HOME MENU) ================= -->
+        <section id="page-beranda" class="tab-content space-y-8">
+            <div class="text-center space-y-3 py-6">
+                <h2 class="text-3xl font-extrabold text-slate-800">Selamat Datang, Bu Guru! 👋</h2>
+                <p class="text-slate-500 max-w-md mx-auto text-sm">Pilih menu di bawah ini untuk mengelola administrasi kelas 4B secara praktis, lengkap, dan terhubung ke cloud.</p>
+            </div>
+
+            <!-- Grid Menu Beranda dengan Ikon Menarik -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+                <div onclick="switchTab('biodata')" class="bg-white hover:bg-indigo-50/50 p-6 rounded-3xl shadow-sm hover:shadow-md border border-slate-200/80 cursor-pointer transition transform hover:-translate-y-1 text-center space-y-4">
+                    <div class="w-16 h-16 bg-indigo-100 text-indigo-600 text-3xl flex items-center justify-center rounded-2xl mx-auto shadow-inner">👨‍🎓</div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-lg">Biodata Siswa</h3>
+                        <p class="text-xs text-slate-400 mt-1">Data lengkap, NIK, NIS & Orang tua</p>
+                    </div>
+                </div>
+
+                <div onclick="switchTab('absensi')" class="bg-white hover:bg-sky-50/50 p-6 rounded-3xl shadow-sm hover:shadow-md border border-slate-200/80 cursor-pointer transition transform hover:-translate-y-1 text-center space-y-4">
+                    <div class="w-16 h-16 bg-sky-100 text-sky-600 text-3xl flex items-center justify-center rounded-2xl mx-auto shadow-inner">📝</div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-lg">Absensi Harian</h3>
+                        <p class="text-xs text-slate-400 mt-1">Catat kehadiran hadir, izin, sakit</p>
+                    </div>
+                </div>
+
+                <div onclick="switchTab('jurnal')" class="bg-white hover:bg-purple-50/50 p-6 rounded-3xl shadow-sm hover:shadow-md border border-slate-200/80 cursor-pointer transition transform hover:-translate-y-1 text-center space-y-4">
+                    <div class="w-16 h-16 bg-purple-100 text-purple-600 text-3xl flex items-center justify-center rounded-2xl mx-auto shadow-inner">📖</div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-lg">Jurnal Mengajar</h3>
+                        <p class="text-xs text-slate-400 mt-1">Catatan rinci materi & kegiatan KBM</p>
+                    </div>
+                </div>
+
+                <div onclick="switchTab('nilai')" class="bg-white hover:bg-emerald-50/50 p-6 rounded-3xl shadow-sm hover:shadow-md border border-slate-200/80 cursor-pointer transition transform hover:-translate-y-1 text-center space-y-4">
+                    <div class="w-16 h-16 bg-emerald-100 text-emerald-600 text-3xl flex items-center justify-center rounded-2xl mx-auto shadow-inner">📊</div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-lg">Rekap Nilai</h3>
+                        <p class="text-xs text-slate-400 mt-1">Input tugas harian & nilai ujian</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 1: BIODATA SISWA (LENGKAP & TABEL RAPI) ================= -->
+        <section id="page-biodata" class="tab-content hidden space-y-6">
+            <div class="flex items-center justify-between">
+                <button onclick="switchTab('beranda')" class="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1">← Kembali ke Beranda</button>
+            </div>
+            
+            <!-- Form Input Biodata Lengkap -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80">
+                <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span>➕</span> Input Biodata Lengkap Siswa Baru</h2>
+                <form id="form-siswa" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Lengkap Siswa *</label>
+                        <input type="text" id="bio-nama" required placeholder="Contoh: Siti Aminah" class="w-full px-3 py-2 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">NIS / No. Absen *</label>
+                        <input type="text" id="bio-nis" required placeholder="Contoh: 1024" class="w-full px-3 py-2 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">NIK Siswa</label>
+                        <input type="text" id="bio-nik" placeholder="3216xxxxxxxxxxxx" class="w-full px-3 py-2 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Jenis Kelamin</label>
+                        <select id="bio-jk" class="w-full px-3 py-2 border rounded-xl text-sm outline-none bg-white focus:ring-2 focus:ring-indigo-500">
+                            <option value="Laki-laki">Laki-laki</option>
+                            <option value="Perempuan">Perempuan</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Tempat, Tanggal Lahir</label>
+                        <input type="text" id="bio-ttl" placeholder="Bekasi, 12 Januari 2015" class="w-full px-3 py-2 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Agama</label>
+                        <select id="bio-agama" class="w-full px-3 py-2 border rounded-xl text-sm outline-none bg-white focus:ring-2 focus:ring-indigo-500">
+                            <option value="Islam">Islam</option>
+                            <option value="Kristen">Kristen</option>
+                            <option value="Katolik">Katolik</option>
+                            <option value="Hindu">Hindu</option>
+                            <option value="Buddha">Buddha</option>
+                            <option value="Konghucu">Konghucu</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Ayah</label>
+                        <input type="text" id="bio-ayah" placeholder="Nama Ayah Kandung" class="w-full px-3 py-2 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Ibu</label>
+                        <input type="text" id="bio-ibu" placeholder="Nama Ibu Kandung" class="w-full px-3 py-2 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Pekerjaan Orang Tua / Wali</label>
+                        <input type="text" id="bio-pekerjaan" placeholder="Contoh: Karyawan Swasta / PNS" class="w-full px-3 py-2 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="md:col-span-3">
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Pendidikan Terakhir Orang Tua</label>
+                        <input type="text" id="bio-pendidikan" placeholder="Contoh: SMA / S1" class="w-full px-3 py-2 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="md:col-span-3 pt-2">
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl text-sm transition shadow-md">Simpan Biodata ke Cloud</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Tabel Data Siswa Rapi & Scrollable Horizontal -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
+                    <h3 class="font-bold text-slate-800">Tabel Master Data Siswa Kelas 4B</h3>
+                    <button onclick="exportToCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition">📥 Download Rekap Excel (.csv)</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse whitespace-nowrap">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-500 text-xs uppercase">
+                                <th class="p-3 rounded-l-xl">NIS / No</th>
+                                <th class="p-3">Nama Siswa</th>
+                                <th class="p-3">NIK</th>
+                                <th class="p-3">L/P</th>
+                                <th class="p-3">TTL</th>
+                                <th class="p-3">Agama</th>
+                                <th class="p-3">Ayah & Ibu</th>
+                                <th class="p-3">Pekerjaan Ortu</th>
+                                <th class="p-3">Pendidikan Ortu</th>
+                                <th class="p-3 text-center rounded-r-xl">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabel-biodata" class="text-xs divide-y divide-slate-100">
+                            <tr><td colspan="10" class="text-center py-6 text-slate-400">Memuat data cloud...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 2: ABSENSI HARIAN ================= -->
+        <section id="page-absensi" class="tab-content hidden space-y-6">
+            <div class="flex items-center justify-between">
+                <button onclick="switchTab('beranda')" class="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1">← Kembali ke Beranda</button>
+            </div>
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+                    <h2 class="text-lg font-bold text-slate-800">Absensi Kelas Harian 📝</h2>
+                    <input type="date" id="tgl-absen" class="px-4 py-2 border rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-500 text-xs uppercase">
+                                <th class="p-3">Nama Siswa</th>
+                                <th class="p-3 text-center">Status Kehadiran</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabel-absensi" class="text-sm divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+                <button onclick="simpanAbsensi()" class="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition shadow-md">Simpan Absensi Hari Ini</button>
+            </div>
+        </section>
+
+        <!-- ================= TAB 3: JURNAL MENGAJAR (RINCI & PROFESIONAL) ================= -->
+        <section id="page-jurnal" class="tab-content hidden space-y-6">
+            <div class="flex items-center justify-between">
+                <button onclick="switchTab('beranda')" class="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1">← Kembali ke Beranda</button>
+            </div>
+            
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80">
+                <h2 class="text-lg font-bold text-slate-800 mb-4">Catatan Jurnal Mengajar Harian 📖</h2>
+                <form id="form-jurnal" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Tanggal KBM</label>
+                            <input type="date" id="jurnal-tgl" required class="w-full px-4 py-2.5 border rounded-xl text-sm outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Mata Pelajaran</label>
+                            <input type="text" id="jurnal-mapel" placeholder="Contoh: Matematika / IPAS" required class="w-full px-4 py-2.5 border rounded-xl text-sm outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Pertemuan Ke-</label>
+                            <input type="number" id="jurnal-pertemuan" placeholder="Contoh: 3" class="w-full px-4 py-2.5 border rounded-xl text-sm outline-none">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Materi Pokok / Bab</label>
+                            <input type="text" id="jurnal-materi" placeholder="Contoh: Pecahan Senilai" required class="w-full px-4 py-2.5 border rounded-xl text-sm outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Metode / Model Pembelajaran</label>
+                            <input type="text" id="jurnal-metode" placeholder="Contoh: Diskusi Kelompok / Tanya Jawab" class="w-full px-4 py-2.5 border rounded-xl text-sm outline-none">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Uraian Kegiatan / Catatan Pembelajaran</label>
+                        <textarea id="jurnal-catatan" rows="3" placeholder="Siswa aktif berdiskusi mengenai..." required class="w-full px-4 py-2.5 border rounded-xl text-sm outline-none"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Catatan Hambatan / Kendala Kelas</label>
+                            <input type="text" id="jurnal-kendala" placeholder="Contoh: Beberapa siswa kurang fokus saat hujan" class="w-full px-4 py-2.5 border rounded-xl text-sm outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Upload Foto Dokumentasi KBM (Opsional)</label>
+                            <input type="file" id="jurnal-file" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-xl text-sm transition shadow-md">Simpan Jurnal Mengajar</button>
+                </form>
+            </div>
+
+            <!-- List Jurnal Rinci -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 space-y-4">
+                <h3 class="font-bold text-slate-800">Riwayat Jurnal Mengajar Guru</h3>
+                <div id="list-jurnal" class="space-y-4 text-sm text-slate-600"></div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 4: REKAP NILAI ================= -->
+        <section id="page-nilai" class="tab-content hidden space-y-6">
+            <div class="flex items-center justify-between">
+                <button onclick="switchTab('beranda')" class="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1">← Kembali ke Beranda</button>
+            </div>
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80">
+                <h2 class="text-lg font-bold text-slate-800 mb-4">Input & Rekap Nilai Akademik 📊</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-500 text-xs uppercase">
+                                <th class="p-3">Nama Siswa</th>
+                                <th class="p-3 text-center">Nilai Tugas/UH</th>
+                                <th class="p-3 text-center">Nilai UTS/UAS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabel-nilai" class="text-sm divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
